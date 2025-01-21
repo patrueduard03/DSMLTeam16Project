@@ -13,7 +13,8 @@ import os
 # Load data
 @st.cache_data
 def load_data():
-    base_path = os.path.join(os.getcwd(), 'Data')
+    base_path = os.path.join(os.getcwd(), 'data')
+    print(base_path)
     df_ro_population = pd.read_excel(os.path.join(base_path, 'Data_source.xlsx'), sheet_name='Romania Population')
     df_buc_population = pd.read_excel(os.path.join(base_path, 'Data_source.xlsx'), sheet_name='Bucharest Population')
     df_ro_avg_income = pd.read_excel(os.path.join(base_path, 'Data_source.xlsx'), sheet_name='Average Income Romania')
