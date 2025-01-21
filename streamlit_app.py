@@ -14,7 +14,6 @@ import os
 @st.cache_data
 def load_data():
     base_path = os.path.join(os.getcwd(), 'data')
-    print(base_path)
     df_ro_population = pd.read_excel(os.path.join(base_path, 'Data_source.xlsx'), sheet_name='Romania Population')
     df_buc_population = pd.read_excel(os.path.join(base_path, 'Data_source.xlsx'), sheet_name='Bucharest Population')
     df_ro_avg_income = pd.read_excel(os.path.join(base_path, 'Data_source.xlsx'), sheet_name='Average Income Romania')
@@ -57,10 +56,10 @@ option = st.sidebar.selectbox("Choose an option:", ["Explore Data", "Linear Regr
 if option == "Explore Data":
     st.title("Explore Data")
     st.write("Dataset Preview (Romania):")
-    st.write(data_romania.head())
+    st.write(data_romania)
 
     st.write("Dataset Preview (Bucharest):")
-    st.write(data_bucharest.head())
+    st.write(data_bucharest)
 
     # Plotting
     st.write("Population Trend (Romania):")
