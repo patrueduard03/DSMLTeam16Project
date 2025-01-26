@@ -303,7 +303,7 @@ def get_nn_model():
 # 5. STREAMLIT APP
 # -----------------------------------------------------------------------------
 def main():
-    # Set seeds once at app start for reproducibility
+    # Set seeds once at app start for reproducibility of the neural network
     set_seeds(42)
 
     # Prepare data and store it in session_state if needed
