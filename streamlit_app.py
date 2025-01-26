@@ -417,7 +417,7 @@ def main():
     elif option == "Model Comparison":
         st.title("Model Comparison")
 
-        # Ensure both LR and NN are loaded/predictions available
+        # Ensure both LR and NN are loaded, along with their predictions
         lr_model = get_lr_model()
         lr_pred = st.session_state["lr_pred"]
 
@@ -435,31 +435,43 @@ def main():
         ax.legend()
         st.pyplot(fig)
 
+        # ------------------------------------------------
         # Compare metrics
+        # ------------------------------------------------
         lr_mae = st.session_state["lr_mae"]
+        lr_mse = st.session_state["lr_mse"]
         nn_mae = st.session_state["nn_mae"]
+        nn_mse = st.session_state["nn_mse"]
 
-        st.write(f"**Linear Regression MAE:** {lr_mae:.4f}")
-        st.write(f"**Neural Network MAE:** {nn_mae:.4f}")
+        st.subheader("Error Metrics Comparison")
+        st.write(f"- **Linear Regression**: MAE = {lr_mae:.4f}, MSE = {lr_mse:.6f}")
+        st.write(f"- **Neural Network**: MAE = {nn_mae:.4f}, MSE = {nn_mse:.6f}")
 
-        # --------------------------------
-        #  Show table with actual vs. predicted
-        # --------------------------------
+        # Decide which model has lower error for each metric
+        best_mae = "Linear Regression" if lr_mae < nn_mae else "Neural Network"
+        best_mse = "Linear Regression" if lr_mse < nn_mse else "Neural Network"
+
+        st.write(f"**MAE Winner:** {best_mae}")
+        st.write(f"**MSE Winner:** {best_mse}")
+
+        # ------------------------------------------------
+        # Show table with actual vs. predicted
+        # ------------------------------------------------
         st.write("### Actual vs. Predicted for Test Period (2023–2024)")
         test_results = test_data.copy()
         test_results["LR_Pred"] = lr_pred
         test_results["NN_Pred"] = nn_pred
 
-        # We display only relevant columns
+        # Display only relevant columns
         display_cols = ["Date", "Standard_of_Living_Real", "LR_Pred", "NN_Pred"]
         st.dataframe(test_results[display_cols].reset_index(drop=True))
 
-        # Optional: Another line chart comparing columns side-by-side
-        # We'll rename columns for clarity
+        # ------------------------------------------------
+        # Additional line chart comparing columns side-by-side
+        # ------------------------------------------------
         chart_df = test_results[["Date", "Standard_of_Living_Real", "LR_Pred", "NN_Pred"]].copy()
         chart_df = chart_df.set_index("Date")
         st.line_chart(chart_df)
-
 
 if __name__ == "__main__":
     main()
