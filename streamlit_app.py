@@ -233,48 +233,31 @@ def get_nn_model():
     Store predictions & metrics in session_state.
 
     Model Explanation:
-    - 3 hidden layers: 128 + 64 + 32 neurons (ReLU).
+    - 2 hidden layers (64 units + 32 units) with ReLU activation.
     - Output layer: single neuron, linear activation.
-    - Custom Adam(learning_rate=0.001), MSE loss, MAE metric.
-    - Up to 300 epochs, but uses EarlyStopping if val_loss doesn't improve.
-    - Smaller batch_size can also improve training stability.
+    - Optimizer: Adam, Loss: MSE, Metrics: MAE
+    - 100 epochs, batch size 32, 20% validation split.
     """
-    set_seeds(42)  # For reproducibility
+    # We set seeds for reproducibility each time we create the NN model
+    set_seeds(42)
 
     if "nn_model" not in st.session_state:
-        from tensorflow.keras.callbacks import EarlyStopping
-
         nn_model = Sequential([
-            Dense(128, activation='relu', input_shape=(st.session_state["X_train_scaled"].shape[1],)),
-            Dense(64, activation='relu'),
+            Dense(64, activation='relu', input_shape=(st.session_state["X_train_scaled"].shape[1],)),
             Dense(32, activation='relu'),
             Dense(1)
         ])
+        nn_model.compile(optimizer='adam', loss='mse', metrics=['mae'])
 
-        # Custom Adam with a chosen learning rate (try 0.0005 or 0.001)
-        optimizer = tf.keras.optimizers.Adam(learning_rate=0.001)
-
-        nn_model.compile(optimizer=optimizer, loss='mse', metrics=['mae'])
-
-        # Early stopping callback
-        early_stop = EarlyStopping(
-            monitor='val_loss',
-            patience=10,            # Stop if val_loss doesn't improve after 10 epochs
-            restore_best_weights=True
-        )
-
-        # Train the model
         history = nn_model.fit(
             st.session_state["X_train_scaled"],
             st.session_state["y_train"],
-            epochs=300,             # Higher max epochs
-            batch_size=16,          # Decrease batch size to see if it helps
+            epochs=1000,
+            batch_size=32,
             validation_split=0.2,
-            verbose=1,             # Show progress in terminal/log
-            callbacks=[early_stop]
+            verbose=0
         )
 
-        # Store the trained model
         st.session_state["nn_model"] = nn_model
         st.session_state["nn_history"] = history.history
 
