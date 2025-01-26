@@ -233,31 +233,48 @@ def get_nn_model():
     Store predictions & metrics in session_state.
 
     Model Explanation:
-    - 2 hidden layers (64 units + 32 units) with ReLU activation.
+    - 3 hidden layers: 128 + 64 + 32 neurons (ReLU).
     - Output layer: single neuron, linear activation.
-    - Optimizer: Adam, Loss: MSE, Metrics: MAE
-    - 100 epochs, batch size 32, 20% validation split.
+    - Custom Adam(learning_rate=0.001), MSE loss, MAE metric.
+    - Up to 300 epochs, but uses EarlyStopping if val_loss doesn't improve.
+    - Smaller batch_size can also improve training stability.
     """
-    # We set seeds for reproducibility each time we create the NN model
-    set_seeds(42)
+    set_seeds(42)  # For reproducibility
 
     if "nn_model" not in st.session_state:
+        from tensorflow.keras.callbacks import EarlyStopping
+
         nn_model = Sequential([
-            Dense(64, activation='relu', input_shape=(st.session_state["X_train_scaled"].shape[1],)),
+            Dense(128, activation='relu', input_shape=(st.session_state["X_train_scaled"].shape[1],)),
+            Dense(64, activation='relu'),
             Dense(32, activation='relu'),
             Dense(1)
         ])
-        nn_model.compile(optimizer='adam', loss='mse', metrics=['mae'])
 
+        # Custom Adam with a chosen learning rate (try 0.0005 or 0.001)
+        optimizer = tf.keras.optimizers.Adam(learning_rate=0.001)
+
+        nn_model.compile(optimizer=optimizer, loss='mse', metrics=['mae'])
+
+        # Early stopping callback
+        early_stop = EarlyStopping(
+            monitor='val_loss',
+            patience=10,            # Stop if val_loss doesn't improve after 10 epochs
+            restore_best_weights=True
+        )
+
+        # Train the model
         history = nn_model.fit(
             st.session_state["X_train_scaled"],
             st.session_state["y_train"],
-            epochs=100,  # or your preferred number of epochs
-            batch_size=32,
+            epochs=300,             # Higher max epochs
+            batch_size=16,          # Decrease batch size to see if it helps
             validation_split=0.2,
-            verbose=0
+            verbose=1,             # Show progress in terminal/log
+            callbacks=[early_stop]
         )
 
+        # Store the trained model
         st.session_state["nn_model"] = nn_model
         st.session_state["nn_history"] = history.history
 
@@ -299,6 +316,11 @@ def main():
         ["Explore Data", "Linear Regression", "Neural Network", "Model Comparison"]
     )
 
+    if st.button("Reset the app"):
+        st.cache_data.clear()
+        st.session_state.clear()
+        st.rerun()
+
     # Retrieve data from session_state
     data_romania = st.session_state["data_romania"]
     data_bucharest = st.session_state["data_bucharest"]
@@ -314,20 +336,52 @@ def main():
         st.title("Explore Data")
 
         st.write("### Romania Data (Monthly)")
-        st.write(data_romania.head(20))  # Show a sample
+        st.write(data_romania.head())
 
         st.write("### Bucharest Data (Monthly)")
-        st.write(data_bucharest.head(20))
+        st.write(data_bucharest.head())
 
+        # -------------------------------------------------------------------------
         # Plot Romania population over time
+        # -------------------------------------------------------------------------
         st.write("#### Population Trend (Romania)")
         romania_pop = data_romania.set_index("Date")["Monthly Population"]
         st.line_chart(romania_pop)
 
+        # -------------------------------------------------------------------------
         # Plot Bucharest population over time
+        # -------------------------------------------------------------------------
         st.write("#### Population Trend (Bucharest)")
         bucharest_pop = data_bucharest.set_index("Date")["Monthly Population"]
         st.line_chart(bucharest_pop)
+
+        # -------------------------------------------------------------------------
+        # Plot Salary Trend (Romania)
+        # -------------------------------------------------------------------------
+        st.write("#### Salary Trend (Romania)")
+        romania_salary = data_romania.set_index("Date")["Salary"]
+        st.line_chart(romania_salary)
+
+        # -------------------------------------------------------------------------
+        # Plot Salary Trend (Bucharest)
+        # -------------------------------------------------------------------------
+        st.write("#### Salary Trend (Bucharest)")
+        bucharest_salary = data_bucharest.set_index("Date")["Salary"]
+        st.line_chart(bucharest_salary)
+
+        # -------------------------------------------------------------------------
+        # Plot Inflation Trend (Romania)
+        # -------------------------------------------------------------------------
+        st.write("#### Inflation Rate Trend (Romania)")
+        romania_inflation = data_romania.set_index("Date")["Inflation_Rate"]
+        st.line_chart(romania_inflation)
+
+        # -------------------------------------------------------------------------
+        # Plot Inflation Trend (Bucharest)
+        # -------------------------------------------------------------------------
+        st.write("#### Inflation Rate Trend (Bucharest)")
+        bucharest_inflation = data_bucharest.set_index("Date")["Inflation_Rate"]
+        st.line_chart(bucharest_inflation)
 
     elif option == "Linear Regression":
         st.title("Linear Regression")
