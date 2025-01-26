@@ -132,17 +132,24 @@ def load_data():
 # 2. PREPARE DATA (Split Train/Test, Scale) and Store in Session State
 # -----------------------------------------------------------------------------
 def prepare_data():
-    """Split data (monthly) into train (2015–2022) and test (2023–2024), then scale."""
+    """
+    Split data (monthly) into:
+      - Train: 2015–2020
+      - Test:  2023–2024
+    Scale features and store in session_state.
+    """
     if "data_prepared" not in st.session_state:
         df_romania, df_bucharest = load_data()
 
         # --------------------------------
         # Filter data by Date
         # --------------------------------
+        # Train: Jan 2015 – Dec 2022
         train_data = df_romania[
             (df_romania["Date"] >= "2015-01-01") &
             (df_romania["Date"] <= "2022-12-01")
             ]
+        # Test: Jan 2023 – Dec 2024
         test_data = df_romania[
             (df_romania["Date"] >= "2023-01-01") &
             (df_romania["Date"] <= "2024-12-01")
@@ -197,7 +204,6 @@ def get_lr_model():
     - It's a simple OLS (ordinary least squares) approach.
     """
     if "lr_model" not in st.session_state:
-        # Train the LR model
         lr_model = LinearRegression()
         lr_model.fit(st.session_state["X_train_scaled"], st.session_state["y_train"])
         st.session_state["lr_model"] = lr_model
@@ -232,11 +238,10 @@ def get_nn_model():
     - Optimizer: Adam, Loss: MSE, Metrics: MAE
     - 100 epochs, batch size 32, 20% validation split.
     """
-    # We set seeds for reproducibility each time we call get_nn_model().
+    # We set seeds for reproducibility each time we create the NN model
     set_seeds(42)
 
     if "nn_model" not in st.session_state:
-        # Build the neural network
         nn_model = Sequential([
             Dense(64, activation='relu', input_shape=(st.session_state["X_train_scaled"].shape[1],)),
             Dense(32, activation='relu'),
@@ -244,7 +249,6 @@ def get_nn_model():
         ])
         nn_model.compile(optimizer='adam', loss='mse', metrics=['mae'])
 
-        # Train the model
         history = nn_model.fit(
             st.session_state["X_train_scaled"],
             st.session_state["y_train"],
@@ -254,20 +258,16 @@ def get_nn_model():
             verbose=0
         )
 
-        # Store the trained model
         st.session_state["nn_model"] = nn_model
-
-        # Store the training history
         st.session_state["nn_history"] = history.history
 
         # Predict on test set
         nn_pred = nn_model.predict(st.session_state["X_test_scaled"]).flatten()
         st.session_state["nn_pred"] = nn_pred
 
-        # Compute metrics once (using sklearn and Keras evaluate)
+        # Compute metrics once
         nn_mae = mean_absolute_error(st.session_state["y_test"], nn_pred)
         nn_mse = mean_squared_error(st.session_state["y_test"], nn_pred)
-
         test_loss, test_mae = nn_model.evaluate(
             st.session_state["X_test_scaled"],
             st.session_state["y_test"],
@@ -314,10 +314,10 @@ def main():
         st.title("Explore Data")
 
         st.write("### Romania Data (Monthly)")
-        st.write(data_romania)
+        st.write(data_romania.head(20))  # Show a sample
 
         st.write("### Bucharest Data (Monthly)")
-        st.write(data_bucharest)
+        st.write(data_bucharest.head(20))
 
         # Plot Romania population over time
         st.write("#### Population Trend (Romania)")
@@ -345,6 +345,8 @@ def main():
         st.write("- Simple **LinearRegression** model (no regularization).")
         st.write("- Features: Monthly Population, Inflation Rate, Salary.")
         st.write("- Target: Standard_of_Living_Real.")
+        st.write(f"Training period: 2015-01 to 2020-12 ({len(train_data)} months)")
+        st.write(f"Testing period: 2023-01 to 2024-12 ({len(test_data)} months)")
 
         st.write(f"**Mean Absolute Error (MAE):** {mae:.4f}")
         st.write(f"**Mean Squared Error (MSE):** {mse:.4f}")
@@ -380,6 +382,8 @@ def main():
         st.write("- **Adam** optimizer, **MSE** loss, **MAE** metric.")
         st.write("- Trained for 100 epochs, batch_size=32, 20% validation split.")
         st.write("- Seed set for reproducibility, but minor variations can still occur.")
+        st.write(f"Training period: 2015-01 to 2020-12 ({len(train_data)} months)")
+        st.write(f"Testing period: 2023-01 to 2024-12 ({len(test_data)} months)")
 
         st.write(f"**Test Loss (MSE) from Keras Evaluate:** {nn_test_loss:.4f}")
         st.write(f"**Test MAE from Keras Evaluate:** {nn_test_mae:.4f}")
@@ -412,7 +416,6 @@ def main():
         ax.plot(test_data["Date"], y_test, label="Actual", marker='o')
         ax.plot(test_data["Date"], lr_pred, label="Linear Regression", linestyle='--')
         ax.plot(test_data["Date"], nn_pred, label="Neural Network", linestyle=':')
-
         ax.set_xlabel("Date")
         ax.set_ylabel("Standard of Living (Real)")
         ax.set_title("Model Comparison: Linear Regression vs Neural Network")
@@ -425,6 +428,24 @@ def main():
 
         st.write(f"**Linear Regression MAE:** {lr_mae:.4f}")
         st.write(f"**Neural Network MAE:** {nn_mae:.4f}")
+
+        # --------------------------------
+        #  Show table with actual vs. predicted
+        # --------------------------------
+        st.write("### Actual vs. Predicted for Test Period (2023–2024)")
+        test_results = test_data.copy()
+        test_results["LR_Pred"] = lr_pred
+        test_results["NN_Pred"] = nn_pred
+
+        # We display only relevant columns
+        display_cols = ["Date", "Standard_of_Living_Real", "LR_Pred", "NN_Pred"]
+        st.dataframe(test_results[display_cols].reset_index(drop=True))
+
+        # Optional: Another line chart comparing columns side-by-side
+        # We'll rename columns for clarity
+        chart_df = test_results[["Date", "Standard_of_Living_Real", "LR_Pred", "NN_Pred"]].copy()
+        chart_df = chart_df.set_index("Date")
+        st.line_chart(chart_df)
 
 
 if __name__ == "__main__":
