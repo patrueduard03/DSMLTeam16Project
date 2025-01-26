@@ -20,7 +20,7 @@ import matplotlib.pyplot as plt
 # 0. SEED-SETTING FOR REPRODUCIBILITY
 # -----------------------------------------------------------------------------
 def set_seeds(seed=42):
-    """Set seeds for Python, NumPy, and TensorFlow."""
+    """Set seeds for Python, NumPy, and TensorFlow to improve reproducibility."""
     random.seed(seed)
     np.random.seed(seed)
     tf.random.set_seed(seed)
@@ -264,10 +264,11 @@ def get_nn_model():
         nn_pred = nn_model.predict(st.session_state["X_test_scaled"]).flatten()
         st.session_state["nn_pred"] = nn_pred
 
-        # Compute metrics once
+        # Compute metrics once (using sklearn and Keras evaluate)
         nn_mae = mean_absolute_error(st.session_state["y_test"], nn_pred)
         nn_mse = mean_squared_error(st.session_state["y_test"], nn_pred)
-        st.session_state["nn_test_loss"], st.session_state["nn_test_mae"] = nn_model.evaluate(
+
+        test_loss, test_mae = nn_model.evaluate(
             st.session_state["X_test_scaled"],
             st.session_state["y_test"],
             verbose=0
@@ -275,6 +276,8 @@ def get_nn_model():
 
         st.session_state["nn_mae"] = nn_mae
         st.session_state["nn_mse"] = nn_mse
+        st.session_state["nn_test_loss"] = test_loss
+        st.session_state["nn_test_mae"] = test_mae
 
     return st.session_state["nn_model"]
 
@@ -283,6 +286,9 @@ def get_nn_model():
 # 5. STREAMLIT APP
 # -----------------------------------------------------------------------------
 def main():
+    # Set seeds once at app start for reproducibility
+    set_seeds(42)
+
     # Prepare data and store it in session_state if needed
     prepare_data()
 
@@ -326,11 +332,11 @@ def main():
     elif option == "Linear Regression":
         st.title("Linear Regression")
 
-        # Get or train the linear regression model
+        # Ensure LR model & predictions exist
         lr_model = get_lr_model()
-
-        # Retrieve predictions & metrics from session_state
         lr_pred = st.session_state["lr_pred"]
+
+        # Retrieve metrics
         mae = st.session_state["lr_mae"]
         mse = st.session_state["lr_mse"]
         r2 = st.session_state["lr_r2"]
@@ -358,11 +364,11 @@ def main():
     elif option == "Neural Network":
         st.title("Neural Network")
 
-        # Get or create the model
+        # Ensure NN model & predictions exist
         nn_model = get_nn_model()
-
-        # Retrieve predictions & metrics from session_state
         nn_pred = st.session_state["nn_pred"]
+
+        # Retrieve metrics
         nn_mae = st.session_state["nn_mae"]
         nn_mse = st.session_state["nn_mse"]
         nn_test_loss = st.session_state["nn_test_loss"]
@@ -380,7 +386,7 @@ def main():
         st.write(f"**Mean Absolute Error (MAE) from Sklearn:** {nn_mae:.4f}")
         st.write(f"**Mean Squared Error (MSE) from Sklearn:** {nn_mse:.4f}")
 
-        # Display short training history (all 100 epochs) from session_state
+        # Display entire training history (100 epochs) from session_state
         history_data = st.session_state["nn_history"]
         fig, ax = plt.subplots()
         ax.plot(history_data['loss'], label='Train Loss')
@@ -394,14 +400,14 @@ def main():
     elif option == "Model Comparison":
         st.title("Model Comparison")
 
-        # Get both models (and thus their predictions & metrics) from session_state
+        # Ensure both LR and NN are loaded/predictions available
         lr_model = get_lr_model()
-        nn_model = get_nn_model()
-
         lr_pred = st.session_state["lr_pred"]
+
+        nn_model = get_nn_model()
         nn_pred = st.session_state["nn_pred"]
 
-        # Plot actual vs. predicted for both
+        # Plot actual vs predicted for both
         fig, ax = plt.subplots()
         ax.plot(test_data["Date"], y_test, label="Actual", marker='o')
         ax.plot(test_data["Date"], lr_pred, label="Linear Regression", linestyle='--')
@@ -422,7 +428,4 @@ def main():
 
 
 if __name__ == "__main__":
-    # Set seeds once at app start for reproducibility
-    set_seeds(42)
-
     main()
