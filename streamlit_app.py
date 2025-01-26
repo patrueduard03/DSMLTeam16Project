@@ -314,10 +314,10 @@ def main():
         st.title("Explore Data")
 
         st.write("### Romania Data (Monthly)")
-        st.write(data_romania.head(20))  # Show a sample
+        st.write(data_romania)
 
         st.write("### Bucharest Data (Monthly)")
-        st.write(data_bucharest.head(20))
+        st.write(data_bucharest)
 
         # Plot Romania population over time
         st.write("#### Population Trend (Romania)")
