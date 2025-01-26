@@ -316,7 +316,7 @@ def main():
         ["Explore Data", "Linear Regression", "Neural Network", "Model Comparison"]
     )
 
-    if st.button("Reset the app"):
+    if st.sidebar.button("Reset the app"):
         st.cache_data.clear()
         st.session_state.clear()
         st.rerun()
