@@ -314,20 +314,52 @@ def main():
         st.title("Explore Data")
 
         st.write("### Romania Data (Monthly)")
-        st.write(data_romania.head(20))  # Show a sample
+        st.write(data_romania.head())
 
         st.write("### Bucharest Data (Monthly)")
-        st.write(data_bucharest.head(20))
+        st.write(data_bucharest.head())
 
+        # -------------------------------------------------------------------------
         # Plot Romania population over time
+        # -------------------------------------------------------------------------
         st.write("#### Population Trend (Romania)")
         romania_pop = data_romania.set_index("Date")["Monthly Population"]
         st.line_chart(romania_pop)
 
+        # -------------------------------------------------------------------------
         # Plot Bucharest population over time
+        # -------------------------------------------------------------------------
         st.write("#### Population Trend (Bucharest)")
         bucharest_pop = data_bucharest.set_index("Date")["Monthly Population"]
         st.line_chart(bucharest_pop)
+
+        # -------------------------------------------------------------------------
+        # Plot Salary Trend (Romania)
+        # -------------------------------------------------------------------------
+        st.write("#### Salary Trend (Romania)")
+        romania_salary = data_romania.set_index("Date")["Salary"]
+        st.line_chart(romania_salary)
+
+        # -------------------------------------------------------------------------
+        # Plot Salary Trend (Bucharest)
+        # -------------------------------------------------------------------------
+        st.write("#### Salary Trend (Bucharest)")
+        bucharest_salary = data_bucharest.set_index("Date")["Salary"]
+        st.line_chart(bucharest_salary)
+
+        # -------------------------------------------------------------------------
+        # Plot Inflation Trend (Romania)
+        # -------------------------------------------------------------------------
+        st.write("#### Inflation Rate Trend (Romania)")
+        romania_inflation = data_romania.set_index("Date")["Inflation_Rate"]
+        st.line_chart(romania_inflation)
+
+        # -------------------------------------------------------------------------
+        # Plot Inflation Trend (Bucharest)
+        # -------------------------------------------------------------------------
+        st.write("#### Inflation Rate Trend (Bucharest)")
+        bucharest_inflation = data_bucharest.set_index("Date")["Inflation_Rate"]
+        st.line_chart(bucharest_inflation)
 
     elif option == "Linear Regression":
         st.title("Linear Regression")
