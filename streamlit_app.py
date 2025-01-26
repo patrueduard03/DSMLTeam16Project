@@ -430,7 +430,7 @@ def main():
         st.write("- 2 hidden layers (64 + 32 neurons) with ReLU.")
         st.write("- 1 output layer (linear).")
         st.write("- **Adam** optimizer, **MSE** loss, **MAE** metric.")
-        st.write("- Trained for 100 epochs, batch_size=32, 20% validation split.")
+        st.write("- Trained for 200 epochs, batch_size=32, 20% validation split.")
         st.write("- Seed set for reproducibility, but minor variations can still occur.")
         st.write(f"Training period: 2015-01 to 2020-12 ({len(train_data)} months)")
         st.write(f"Testing period: 2023-01 to 2024-12 ({len(test_data)} months)")
@@ -440,7 +440,7 @@ def main():
         st.write(f"**Mean Absolute Error (MAE) from Sklearn:** {nn_mae:.4f}")
         st.write(f"**Mean Squared Error (MSE) from Sklearn:** {nn_mse:.4f}")
 
-        # Display entire training history (100 epochs) from session_state
+        # Display entire training history (200 epochs) from session_state
         history_data = st.session_state["nn_history"]
         fig, ax = plt.subplots()
         ax.plot(history_data['loss'], label='Train Loss')
