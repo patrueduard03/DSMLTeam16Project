@@ -252,7 +252,7 @@ def get_nn_model():
         history = nn_model.fit(
             st.session_state["X_train_scaled"],
             st.session_state["y_train"],
-            epochs=1000,
+            epochs=200,
             batch_size=32,
             validation_split=0.2,
             verbose=0
