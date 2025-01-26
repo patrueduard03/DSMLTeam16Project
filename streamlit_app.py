@@ -342,25 +342,38 @@ def main():
         r2 = st.session_state["lr_r2"]
 
         st.write("**Model Explanation**:")
-        st.write("- Simple **LinearRegression** model (no regularization).")
+        st.write("- Simple **Linear Regression** model (no regularization).")
         st.write("- Features: Monthly Population, Inflation Rate, Salary.")
         st.write("- Target: Standard_of_Living_Real.")
         st.write(f"Training period: 2015-01 to 2020-12 ({len(train_data)} months)")
         st.write(f"Testing period: 2023-01 to 2024-12 ({len(test_data)} months)")
 
+        # Show intercept and coefficients
+        intercept = lr_model.intercept_
+        coefficients = lr_model.coef_  # An array, one value per feature
+        st.write(f"**Intercept**: {intercept:.6f}")
+        st.write(f"**Coefficients** (Slope terms for each feature): {coefficients}")
+
         st.write(f"**Mean Absolute Error (MAE):** {mae:.4f}")
         st.write(f"**Mean Squared Error (MSE):** {mse:.4f}")
         st.write(f"**R² Score:** {r2:.4f}")
 
-        # Plot actual vs predicted
+        # Plot actual vs. predicted
         fig, ax = plt.subplots()
-        ax.scatter(y_test, lr_pred)
-        ax.plot([y_test.min(), y_test.max()],
-                [y_test.min(), y_test.max()],
-                'k--', lw=2)
-        ax.set_xlabel('Actual')
-        ax.set_ylabel('Predicted')
-        ax.set_title("Linear Regression: Actual vs Predicted")
+
+        # Scatter plot: x = actual, y = predicted
+        ax.scatter(y_test, lr_pred, color="blue", label="Predicted Points")
+
+        # Plot perfect 1:1 line (dashed black line)
+        min_val = min(y_test.min(), lr_pred.min())
+        max_val = max(y_test.max(), lr_pred.max())
+        ax.plot([min_val, max_val], [min_val, max_val], 'k--', lw=2,
+                label="Perfect Prediction (y = x)")
+
+        ax.set_xlabel("Actual (Standard_of_Living_Real)")
+        ax.set_ylabel("Predicted")
+        ax.set_title("Linear Regression: Actual vs. Predicted")
+        ax.legend()
         st.pyplot(fig)
 
     elif option == "Neural Network":
