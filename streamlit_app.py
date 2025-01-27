@@ -382,7 +382,7 @@ def main():
         st.write("- Simple **Linear Regression** model (no regularization).")
         st.write("- Features: Monthly Population, Inflation Rate, Salary.")
         st.write("- Target: Standard_of_Living_Real.")
-        st.write(f"Training period: 2015-01 to 2020-12 ({len(train_data)} months)")
+        st.write(f"Training period: 2015-01 to 2022-12 ({len(train_data)} months)")
         st.write(f"Testing period: 2023-01 to 2024-12 ({len(test_data)} months)")
 
         # Show intercept and coefficients
