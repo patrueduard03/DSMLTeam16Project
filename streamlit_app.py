@@ -134,7 +134,7 @@ def load_data():
 def prepare_data():
     """
     Split data (monthly) into:
-      - Train: 2015–2020
+      - Train: 2015–2022
       - Test:  2023–2024
     Scale features and store in session_state.
     """
@@ -432,7 +432,7 @@ def main():
         st.write("- **Adam** optimizer, **MSE** loss, **MAE** metric.")
         st.write("- Trained for 200 epochs, batch_size=32, 20% validation split.")
         st.write("- Seed set for reproducibility, but minor variations can still occur.")
-        st.write(f"Training period: 2015-01 to 2020-12 ({len(train_data)} months)")
+        st.write(f"Training period: 2015-01 to 2022-12 ({len(train_data)} months)")
         st.write(f"Testing period: 2023-01 to 2024-12 ({len(test_data)} months)")
 
         st.write(f"**Test Loss (MSE) from Keras Evaluate:** {nn_test_loss:.4f}")
